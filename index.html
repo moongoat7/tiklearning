@@ -21,23 +21,39 @@
 <script>
 const { useState, useRef } = React;
 
-// פונקציה ליצור אייטם בעזרת קריאה ל-API (/api/generate)
+// פונקציה ליצור אייטם בעזרת קריאה ל-API (/api/generate ו-/api/generate-video)
 async function createAiItem(topic, level, duration) {
+  // 1. בקשת תסריט ושאלון מ-OpenAI
   const body = { topic, level, duration: parseInt(duration, 10) || duration };
-  const resp = await fetch("/api/generate", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+  const resp = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
   });
   const data = await resp.json();
-  if (!resp.ok) throw new Error(data.error || "API error");
+  if (!resp.ok) {
+    throw new Error(data.error || 'OpenAI API failed');
+  }
+
+  // 2. בקשת סרטון D-ID לפי התסריט שחזר
+  const videoResp = await fetch('/api/generate-video', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ script: data.script })
+  });
+  const videoData = await videoResp.json();
+  if (!videoResp.ok) {
+    throw new Error(videoData.error || 'Video API failed');
+  }
+
+  // 3. החזרת פריט חדש לפיד עם הסרטון והשאלון
   return {
     id: String(Date.now()),
     topic,
     level,
-    duration: (typeof duration === "number" ? duration + " שניות" : duration),
+    duration: typeof duration === 'number' ? `${duration} שניות` : duration,
     script: data.script,
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
+    videoUrl: videoData.videoUrl,
     quiz: data.quiz
   };
 }
@@ -105,7 +121,7 @@ function Setup({ onCreate }){
       React.createElement('button',{onClick:handleCreate,disabled:busy,className:'w-full py-2 rounded-lg bg-white/20 hover:bg-white/30 disabled:opacity-60'},
         busy ? 'יוצר…' : 'צור סרטון AI'
       ),
-      React.createElement('div',{className:'text-xs text-white/60 mt-2'},'בלחיצה ניצור סקריפט ושאלה בעזרת OpenAI ונטען וידאו דמה.')
+      React.createElement('div',{className:'text-xs text-white/60 mt-2'},'בלחיצה ניצור תסריט ושאלה בעזרת OpenAI ונפיק סרטון עם D‑ID.')
     )
   );
 }
