@@ -71,35 +71,37 @@
 
   <script>
     // 1. מבקש תסריט ושאלה מ-OpenAI, ואז מבקש וידאו אמיתי מ-D-ID
-    async function createAiItem(topic, level, duration) {
-      // בקשת תסריט ושאלון
-      const resp = await fetch('/api/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ topic, level, duration: parseInt(duration, 10) })
-      });
-      const data = await resp.json();
-      if (!resp.ok) throw new Error(data.error || 'OpenAI API failed');
+  // 1. מבקש תסריט ושאלה מ-OpenAI, 2. מבקש וידאו מ-D-ID
+async function createAiItem(topic, level, duration) {
+  const resp = await fetch('/api/generate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ topic, level, duration: parseInt(duration, 10) || duration })
+  });
+  const data = await resp.json();
+  if (!resp.ok) throw new Error(data.error || 'OpenAI API failed');
 
-      // בקשת סרטון D-ID מהתסריט
-      const videoResp = await fetch('/api/generate-video', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ script: data.script })
-      });
-      const videoData = await videoResp.json();
-      if (!videoResp.ok) throw new Error(videoData.error || 'Video API failed');
+  const videoResp = await fetch('/api/generate-video', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ script: data.script })
+  });
+  const videoData = await videoResp.json();
+  if (!videoResp.ok) throw new Error(videoData.error || 'Video API failed');
 
-      return {
-        id: Date.now().toString(),
-        topic,
-        level,
-        duration: duration + ' שניות',
-        script: data.script,
-        videoUrl: videoData.videoUrl,
-        quiz: data.quiz
-      };
-    }
+  console.log('DID videoData:', videoData); // אמור להכיל { videoUrl: "..." }
+
+  return {
+    id: String(Date.now()),
+    topic,
+    level,
+    duration: `${parseInt(duration, 10) || duration} שניות`,
+    script: data.script,
+    videoUrl: videoData.videoUrl,   // <<< שימי לב לכתיב הנכון
+    quiz: data.quiz
+  };
+}
+
 
     // בונה אלמנט HTML להצגת הפריט בפיד
     function renderItem(item) {
