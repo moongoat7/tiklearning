@@ -1,125 +1,225 @@
 <!doctype html>
-<html lang="en">
+<html lang="he" dir="rtl">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LearningTok — static (UMD)</title>
+  <title>LearningTok — AI Feed (Static, Single File)</title>
+  <meta name="description" content="LearningTok: AI-generated learning feed with quizzes — single-file static demo." />
   <script src="https://cdn.tailwindcss.com"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    html, body { background: radial-gradient(ellipse at top, rgba(255,255,255,0.06), transparent 60%) , linear-gradient(#0a0a0a, #000); min-height: 100%; }
+  </style>
 </head>
-<body class="min-h-screen bg-gradient-to-b from-neutral-900 to-black text-white">
+<body class="min-h-screen text-white">
   <div id="root"></div>
+
   <script>
-    const { useState, useEffect, useMemo, useRef } = React;
+    const { useState, useRef } = React;
 
-    const DEFAULT_DECK = [
-      { id: 'm1', type: 'mcq', topic: 'Physics: Kinematics', prompt: 'A car accelerates from 0 to 20 m/s in 4 s. What is the average acceleration?', choices: ['2.5 m/s²','5 m/s²','10 m/s²','80 m/s²'], correctIndex: 1, explain: 'a = Δv/Δt = 20/4 = 5 m/s².' },
-      { id: 'f1', type: 'flashcard', topic: 'Hebrew slang', front: 'אשכרה (ashkara)', back: "Meaning: 'actually/for real' (emphatic).\nUsage: 'אשכרה עשית את זה?' = 'You actually did it?'" },
-      { id: 'm2', type: 'mcq', topic: 'Math: Derivatives', prompt: 'd/dx (x^2) = ?', choices: ['x','2x','x^2','2'], correctIndex: 1, explain: 'Power rule: d/dx x^n = n x^{n-1}.' }
-    ];
-
-    function useLocalStorage(key, initial){
-      const [v,setV]=useState(()=>{try{const x=localStorage.getItem(key);return x?JSON.parse(x):initial;}catch{return initial;}});
-      useEffect(()=>{try{localStorage.setItem(key,JSON.stringify(v));}catch{}},[key,v]);
-      return [v,setV];
+    function generateQuiz(topic) {
+      const base = topic.trim() || 'הנושא שלך';
+      const prompts = [
+        `מה העיקרון המרכזי ב"${base}"?`,
+        `מה משמעות המושג העיקרי ב"${base}"?`,
+        `איזו אפשרות מתארת נכון את "${base}"?`
+      ];
+      const choicesPool = [
+        ['הגדרה נכונה', 'דוגמה בלבד', 'טעות נפוצה', 'אין משמעות'],
+        ['מושג בסיסי', 'שיטה מתקדמת בלבד', 'שגיאה נפוצה', 'קיצור לא רלוונטי'],
+        ['תהליך בן שלב אחד', 'רצף צעדים מסודר', 'אירוע חד פעמי', 'לא ניתן להסבר']
+      ];
+      const ix = Math.floor(Math.random()*prompts.length);
+      const choices = choicesPool[ix];
+      return {
+        prompt: prompts[ix],
+        choices,
+        correctIndex: 0,
+        explain: 'האפשרות הראשונה היא התקציר הנכון על פי הסרטון.',
+      };
     }
 
-    function Header({ progressPercent, onReset }){
-      return React.createElement('div',{className:'flex items-center justify-between p-3'},
-        React.createElement('div',{className:'flex items-center gap-3'},
-          React.createElement('div',{className:'w-8 h-8 rounded-xl bg-white/10 backdrop-blur flex items-center justify-center'},
-            React.createElement('span',{className:'text-xs font-bold'},'LT')
-          ),
-          React.createElement('div',null,
-            React.createElement('div',{className:'text-sm text-white/90 font-semibold'},'LearningTok'),
-            React.createElement('div',{className:'text-xs text-white/60'},'Swipe to learn')
-          )
-        ),
-        React.createElement('div',{className:'flex items-center gap-3'},
-          React.createElement('button',{onClick:onReset,className:'px-2.5 py-1.5 text-xs rounded-lg bg-white/10 hover:bg-white/20 transition'},'Reset'),
-          React.createElement('div',{className:'text-xs text-white/60'},progressPercent+'%')
-        )
+    function generateScript(topic, level, duration) {
+      const t = topic.trim() || 'הנושא שלך';
+      const dur = duration || '15 שניות';
+      const lvl = level || 'בסיסי';
+      return [
+        `שלום! בסרטון קצר (${dur}) נסביר בקצרה על "${t}" ברמה ${lvl}.`,
+        `ראשית, מה זה "${t}"? נגדיר את המושג בפשטות ולאחר מכן ניתן דוגמה קצרה.`,
+        `לבסוף, נסכם וטיפ אחד לזכור.`
+      ].join(' ');
+    }
+
+    const DEMO_VIDEO = "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4";
+
+    function Header({ onImport, onExport, onReset }){
+      return (
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center font-bold">LT</div>
+            <div>
+              <div className="text-sm font-semibold">LearningTok</div>
+              <div className="text-xs text-white/60">פיד לימודי בסגנון טיקטוק</div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={onImport} className="px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20">ייבוא</button>
+            <button onClick={onExport} className="px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20">ייצוא</button>
+            <button onClick={onReset} className="px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20">אפס</button>
+          </div>
+        </div>
       );
     }
 
-    function MCQCard({ item, onAnswered }){
-      const [picked,setPicked]=useState(null);
-      const correct = picked!==null && picked===item.correctIndex;
-      return React.createElement('div',{className:'p-4 flex flex-col gap-3'},
-        React.createElement('div',{className:'text-xs uppercase tracking-wider text-white/60'}, item.topic),
-        React.createElement('h2',{className:'text-xl font-semibold leading-snug'}, item.prompt),
-        React.createElement('div',{className:'grid gap-2 mt-2'},
-          ...item.choices.map((c,i)=>React.createElement('button',{
-            key:i, onClick:()=>setPicked(i),
-            className:'text-left p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition ' + (picked===i ? (i===item.correctIndex?'ring-2 ring-green-400':'ring-2 ring-red-400') : '')
-          }, React.createElement('div',{className:'text-sm font-medium'}, c)))
-        ),
-        picked!==null && React.createElement('div',{className:'mt-2 p-3 rounded-xl '+(correct?'bg-green-500/10':'bg-red-500/10')},
-          React.createElement('div',{className:'text-sm whitespace-pre-line'}, item.explain),
-          React.createElement('button',{onClick:()=>onAnswered(correct),className:'mt-3 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm'},'Next')
-        )
+    function Setup({ onCreate }){
+      const [topic, setTopic] = useState('מבוא לפייתון');
+      const [level, setLevel] = useState('בסיסי');
+      const [duration, setDuration] = useState('15 שניות');
+      const [busy, setBusy] = useState(false);
+
+      const create = async () => {
+        setBusy(true);
+        await new Promise(r=>setTimeout(r, 1200));
+        const script = generateScript(topic, level, duration);
+        const quiz = generateQuiz(topic);
+        onCreate({
+          id: String(Date.now()),
+          topic, level, duration,
+          script,
+          videoUrl: DEMO_VIDEO,
+          quiz
+        });
+        setBusy(false);
+      };
+
+      return (
+        <div className="p-4 max-w-[480px] mx-auto">
+          <div className="text-lg font-semibold mb-2">צור סרטון AI ראשון</div>
+          <label className="block text-sm mb-1">נושא</label>
+          <input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="מה אתה רוצה ללמוד?" className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 mb-3"/>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div>
+              <label className="block text-sm mb-1">רמה</label>
+              <select value={level} onChange={e=>setLevel(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10">
+                <option>בסיסי</option>
+                <option>בינוני</option>
+                <option>מתקדם</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm mb-1">אורך משוער</label>
+              <select value={duration} onChange={e=>setDuration(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10">
+                <option>15 שניות</option>
+                <option>30 שניות</option>
+                <option>60 שניות</option>
+              </select>
+            </div>
+          </div>
+          <button onClick={create} disabled={busy} className="w-full py-2 rounded-lg bg-white/20 hover:bg-white/30 disabled:opacity-60">
+            {busy ? 'יוצר…' : 'צור סרטון AI'}
+          </button>
+          <div className="text-xs text-white/60 mt-2">ניצור סקריפט+שאלה + נטען וידאו דמה. בהמשך נחבר לאווטר אמיתי.</div>
+        </div>
       );
     }
 
-    function FlashcardCard({ item, onNext }){
-      const [flipped,setFlipped]=useState(false);
-      return React.createElement('div',{className:'p-4 flex flex-col gap-3'},
-        React.createElement('div',{className:'text-xs uppercase tracking-wider text-white/60'}, item.topic),
-        React.createElement('h2',{className:'text-xl font-semibold leading-snug'}, 'Flashcard'),
-        React.createElement('button',{onClick:()=>setFlipped(!flipped),className:'relative h-56 rounded-2xl border border-white/10 bg-white/5 overflow-hidden group w-full'},
-          React.createElement('div',{className:'absolute inset-0 p-4 flex items-center justify-center text-center text-lg font-medium whitespace-pre-line'}, flipped?item.back:item.front)
-        ),
-        flipped && React.createElement('button',{onClick:onNext,className:'self-start mt-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm'},'Next'),
-        React.createElement('div',{className:'text-xs text-white/50 mt-auto'},'Tap the card to flip.')
+    function VideoCard({ item }){
+      const [picked, setPicked] = useState(null);
+      const correct = picked !== null && picked === item.quiz.correctIndex;
+      return (
+        <div className="p-4 flex flex-col gap-3">
+          <div className="text-xs uppercase tracking-wider text-white/60">{item.topic + ' • ' + item.level + ' • ' + item.duration}</div>
+          <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40">
+            <video src={item.videoUrl} controls className="w-full h-56 object-cover"></video>
+          </div>
+          <div className="text-sm text-white/80 bg-white/5 border border-white/10 rounded-xl p-3 whitespace-pre-wrap">{item.script}</div>
+          <div className="mt-1 text-base font-semibold">{item.quiz.prompt}</div>
+          <div className="grid gap-2">
+            {item.quiz.choices.map((c,i)=>(
+              <button key={i} onClick={()=>setPicked(i)}
+                className={`text-right p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition ${picked===i ? (i===item.quiz.correctIndex?'ring-2 ring-green-400':'ring-2 ring-red-400') : ''}`}>
+                <div className="text-sm font-medium">{c}</div>
+              </button>
+            ))}
+          </div>
+          {picked!==null && (
+            <div className={`mt-2 p-3 rounded-xl ${correct?'bg-green-500/10':'bg-red-500/10'}`}>
+              <div className="text-sm whitespace-pre-line">{item.quiz.explain}</div>
+              <div className="text-xs text-white/60 mt-1">{correct ? 'תשובה נכונה 👌' : 'ננסה שוב?'}</div>
+            </div>
+          )}
+        </div>
       );
-    }
-
-    function Card({ item, onNext, onCorrect }){
-      if(item.type==='mcq') return React.createElement(MCQCard,{item,onAnswered:(ok)=>{ if(ok) onCorrect(); onNext(); }});
-      if(item.type==='flashcard') return React.createElement(FlashcardCard,{item,onNext:()=>{ onCorrect(); onNext(); }});
-      return React.createElement('div',null,'Unknown card type');
     }
 
     function App(){
-      const [deck,setDeck]=useLocalStorage('lt.deck', DEFAULT_DECK);
-      const [index,setIndex]=useLocalStorage('lt.index', 0);
-      const [correctMap,setCorrectMap]=useLocalStorage('lt.correct', {});
-      const total = deck.length||1;
-      const correctCount = useMemo(()=>Object.values(correctMap).filter(Boolean).length,[correctMap]);
-      const progressPercent = Math.round((correctCount/total)*100);
+      const [feed, setFeed] = useState([]);
+      const [draft, setDraft] = useState(null);
+      const fileRef = useRef(null);
 
-      const next = ()=>setIndex(i=>Math.min(i+1, deck.length-1));
-      const prev = ()=>setIndex(i=>Math.max(i-1, 0));
-      const onCorrect = ()=>{
-        const id = deck[index]?.id;
-        if(!id) return;
-        setCorrectMap(m=>({...m,[id]:true}));
+      const onCreate = (item) => setDraft(item);
+      const addToFeed = () => { if(draft){ setFeed(f=>[draft, ...f]); setDraft(null);} };
+
+      const onImport = ()=> fileRef.current?.click();
+      const onFile = async (e)=>{
+        const f = e.target.files?.[0]; if(!f) return;
+        try{
+          const text = await f.text();
+          const data = JSON.parse(text);
+          if(!Array.isArray(data)) throw new Error('JSON must be an array');
+          setFeed(data);
+        }catch(err){ alert('Import failed: '+err.message); }
+        finally{ e.target.value=''; }
       };
+      const onExport = ()=>{
+        const blob = new Blob([JSON.stringify(feed, null, 2)], {type:'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'feed.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      };
+      const onReset = ()=>{ setFeed([]); setDraft(null); };
 
-      return React.createElement('div',{className:'py-8 px-4'},
-        React.createElement('div',{className:'relative mx-auto max-w-[380px] h-[740px] rounded-[2.25rem] shadow-[0_10px_30px_rgba(0,0,0,0.25)] shadow-black/20 border border-white/10 overflow-hidden bg-gradient-to-b from-zinc-900 to-black text-white'},
-          React.createElement('div',{className:'absolute left-1/2 -translate-x-1/2 top-2 w-40 h-5 rounded-b-2xl bg-black/40'}),
-          React.createElement('div',{className:'absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.06),transparent_60%)]'}),
-          React.createElement('div',{className:'relative z-10 h-full flex flex-col'},
-            React.createElement(Header,{progressPercent,onReset:()=>{localStorage.clear(); location.reload();}}),
-            React.createElement('div',{className:'relative flex-1 overflow-hidden'},
-              deck[index] && React.createElement('div',{className:'absolute inset-0 transition-transform'}, 
-                React.createElement(Card,{item:deck[index], onNext:next, onCorrect})
-              ),
-              React.createElement('div',{className:'absolute bottom-3 left-0 right-0 mx-auto w-full flex items-center justify-center gap-2 text-white/60 text-xs'},
-                React.createElement('button',{onClick:prev,className:'px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10'},'Prev'),
-                React.createElement('div',{className:'px-3 py-1.5 rounded-lg bg-white/5 border border-white/10'}, (index+1)+' / '+deck.length),
-                React.createElement('button',{onClick:next,className:'px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10'},'Next')
-              )
-            )
-          )
-        ),
-        React.createElement('div',{className:'max-w-[380px] mx-auto mt-4 text-center text-white/60 text-sm'},'Static UMD build.')
+      return (
+        <div>
+          <Header onImport={onImport} onExport={onExport} onReset={onReset}/>
+          <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={onFile}/>
+          <div className="py-6 px-4">
+            <div className="relative mx-auto max-w-[390px] h-[760px] rounded-[2.25rem] shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 overflow-hidden bg-gradient-to-b from-zinc-900 to-black">
+              <div className="absolute left-1/2 -translate-x-1/2 top-2 w-40 h-5 rounded-b-2xl bg-black/40"></div>
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.06),transparent_60%)]"></div>
+              <div className="relative z-10 h-full flex flex-col">
+                {!draft && <Setup onCreate={onCreate}/>}
+                {draft && (
+                  <div className="p-3 border-b border-white/10 bg-white/5">
+                    <div className="text-sm font-semibold mb-2">טיוטה נוכחית</div>
+                    <VideoCard item={draft}/>
+                    <div className="mt-2 flex justify-end">
+                      <button onClick={()=>setDraft(null)} className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 mr-2">מחק טיוטה</button>
+                      <button onClick={addToFeed} className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30">הוסף לפיד</button>
+                    </div>
+                  </div>
+                )}
+                <div className="flex-1 overflow-y-auto">
+                  {feed.length===0
+                    ? <div className="p-6 text-center text-white/60">הפיד ריק. צור סרטון AI והוסף לפיד.</div>
+                    : feed.map((it, idx)=>(
+                        <div key={it.id || idx} className="border-b border-white/10">
+                          <VideoCard item={it}/>
+                        </div>
+                      ))
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       );
     }
 
-    ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+    ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
   </script>
 </body>
 </html>
