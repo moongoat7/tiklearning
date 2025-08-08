@@ -21,7 +21,7 @@
 <script>
 const { useState, useRef } = React;
 
-// פונקציה ליצור אייטם בעזרת קריאה ל־API (/api/generate)
+// פונקציה ליצור אייטם בעזרת קריאה ל-API (/api/generate)
 async function createAiItem(topic, level, duration) {
   const body = { topic, level, duration: parseInt(duration, 10) || duration };
   const resp = await fetch("/api/generate", {
@@ -37,31 +37,31 @@ async function createAiItem(topic, level, duration) {
     level,
     duration: (typeof duration === "number" ? duration + " שניות" : duration),
     script: data.script,
-    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4", // כרגע וידאו דמה
+    videoUrl: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
     quiz: data.quiz
   };
 }
 
 function Header({ onImport, onExport, onReset }) {
   return (
-    <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center font-bold">LT</div>
-        <div>
-          <div className="text-sm font-semibold">LearningTok</div>
-          <div className="text-xs text-white/60">פיד לימודי בסגנון טיקטוק</div>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <button onClick={onImport} className="px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20">ייבוא</button>
-        <button onClick={onExport} className="px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20">ייצוא</button>
-        <button onClick={onReset} className="px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20">איפוס</button>
-      </div>
-    </div>
+    React.createElement('div',{className:'px-4 pt-4 pb-2 flex items-center justify-between'},
+      React.createElement('div',{className:'flex items-center gap-3'},
+        React.createElement('div',{className:'w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center font-bold'},'LT'),
+        React.createElement('div',null,
+          React.createElement('div',{className:'text-sm font-semibold'},'LearningTok'),
+          React.createElement('div',{className:'text-xs text-white/60'},'פיד לימודי בסגנון טיקטוק')
+        )
+      ),
+      React.createElement('div',{className:'flex items-center gap-2'},
+        React.createElement('button',{onClick:onImport,className:'px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20'},'ייבוא'),
+        React.createElement('button',{onClick:onExport,className:'px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20'},'ייצוא'),
+        React.createElement('button',{onClick:onReset,className:'px-2 py-1 text-xs rounded-lg bg-white/10 hover:bg-white/20'},'איפוס')
+      )
+    )
   );
 }
 
-function Setup({ onCreate }) {
+function Setup({ onCreate }){
   const [topic,setTopic] = useState('מבוא לפייתון');
   const [level,setLevel] = useState('בסיסי');
   const [duration,setDuration] = useState('15 שניות');
@@ -80,33 +80,33 @@ function Setup({ onCreate }) {
   };
 
   return (
-    <div className="p-4 max-w-[480px] mx-auto">
-      <div className="text-lg font-semibold mb-2">צור סרטון AI ראשון</div>
-      <label className="block text-sm mb-1">נושא</label>
-      <input value={topic} onChange={e=>setTopic(e.target.value)} placeholder="מה אתה רוצה ללמוד?" className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 mb-3"/>
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        <div>
-          <label className="block text-sm mb-1">רמה</label>
-          <select value={level} onChange={e=>setLevel(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10">
-            <option>בסיסי</option>
-            <option>בינוני</option>
-            <option>מתקדם</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm mb-1">אורך משוער</label>
-          <select value={duration} onChange={e=>setDuration(e.target.value)} className="w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10">
-            <option>15 שניות</option>
-            <option>30 שניות</option>
-            <option>60 שניות</option>
-          </select>
-        </div>
-      </div>
-      <button onClick={handleCreate} disabled={busy} className="w-full py-2 rounded-lg bg-white/20 hover:bg-white/30 disabled:opacity-60">
-        {busy ? 'יוצר…' : 'צור סרטון AI'}
-      </button>
-      <div className="text-xs text-white/60 mt-2">בלחיצה ניצור סקריפט ושאלה בעזרת OpenAI ונטען וידאו דמה.</div>
-    </div>
+    React.createElement('div',{className:'p-4 max-w-[480px] mx-auto'},
+      React.createElement('div',{className:'text-lg font-semibold mb-2'},'צור סרטון AI ראשון'),
+      React.createElement('label',{className:'block text-sm mb-1'},'נושא'),
+      React.createElement('input',{value:topic,onChange:e=>setTopic(e.target.value),placeholder:'מה אתה רוצה ללמוד?',className:'w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10 mb-3'}),
+      React.createElement('div',{className:'grid grid-cols-2 gap-2 mb-3'},
+        React.createElement('div',null,
+          React.createElement('label',{className:'block text-sm mb-1'},'רמה'),
+          React.createElement('select',{value:level,onChange:e=>setLevel(e.target.value),className:'w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10'},
+            React.createElement('option',null,'בסיסי'),
+            React.createElement('option',null,'בינוני'),
+            React.createElement('option',null,'מתקדם')
+          )
+        ),
+        React.createElement('div',null,
+          React.createElement('label',{className:'block text-sm mb-1'},'אורך משוער'),
+          React.createElement('select',{value:duration,onChange:e=>setDuration(e.target.value),className:'w-full px-3 py-2 rounded-lg bg-white/10 border border-white/10'},
+            React.createElement('option',null,'15 שניות'),
+            React.createElement('option',null,'30 שניות'),
+            React.createElement('option',null,'60 שניות')
+          )
+        )
+      ),
+      React.createElement('button',{onClick:handleCreate,disabled:busy,className:'w-full py-2 rounded-lg bg-white/20 hover:bg-white/30 disabled:opacity-60'},
+        busy ? 'יוצר…' : 'צור סרטון AI'
+      ),
+      React.createElement('div',{className:'text-xs text-white/60 mt-2'},'בלחיצה ניצור סקריפט ושאלה בעזרת OpenAI ונטען וידאו דמה.')
+    )
   );
 }
 
@@ -114,28 +114,27 @@ function VideoCard({ item }) {
   const [picked, setPicked] = useState(null);
   const correct = picked !== null && picked === item.quiz.correctIndex;
   return (
-    <div className="p-4 flex flex-col gap-3">
-      <div className="text-xs uppercase tracking-wider text-white/60">{item.topic + ' • ' + item.level + ' • ' + item.duration}</div>
-      <div className="rounded-2xl overflow-hidden border border-white/10 bg-black/40">
-        <video src={item.videoUrl} controls className="w-full h-56 object-cover"></video>
-      </div>
-      <div className="text-sm text-white/80 bg-white/5 border border-white/10 rounded-xl p-3 whitespace-pre-wrap">{item.script}</div>
-      <div className="mt-1 text-base font-semibold">{item.quiz.prompt}</div>
-      <div className="grid gap-2">
-        {item.quiz.choices.map((c,i)=>(
-          <button key={i} onClick={()=>setPicked(i)}
-            className={`text-right p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition ${picked===i ? (i===item.quiz.correctIndex ? 'ring-2 ring-green-400' : 'ring-2 ring-red-400') : ''}`}>
-            <div className="text-sm font-medium">{c}</div>
-          </button>
-        ))}
-      </div>
-      {picked!==null && (
-        <div className={`mt-2 p-3 rounded-xl ${correct ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-          <div className="text-sm whitespace-pre-line">{item.quiz.explain}</div>
-          <div className="text-xs text-white/60 mt-1">{correct ? 'תשובה נכונה 👌' : 'לא נורא, נסה שוב'}</div>
-        </div>
-      )}
-    </div>
+    React.createElement('div',{className:'p-4 flex flex-col gap-3'},
+      React.createElement('div',{className:'text-xs uppercase tracking-wider text-white/60'}, item.topic + ' • ' + item.level + ' • ' + item.duration),
+      React.createElement('div',{className:'rounded-2xl overflow-hidden border border-white/10 bg-black/40'},
+        React.createElement('video',{src:item.videoUrl, controls:true, className:'w-full h-56 object-cover'})
+      ),
+      React.createElement('div',{className:'text-sm text-white/80 bg-white/5 border border-white/10 rounded-xl p-3 whitespace-pre-wrap'}, item.script),
+      React.createElement('div',{className:'mt-1 text-base font-semibold'}, item.quiz.prompt),
+      React.createElement('div',{className:'grid gap-2'},
+        ...item.quiz.choices.map((c,i)=>
+          React.createElement('button',{
+            key:i,
+            onClick:()=>setPicked(i),
+            className:'text-right p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition ' + (picked===i ? (i===item.quiz.correctIndex ? 'ring-2 ring-green-400' : 'ring-2 ring-red-400') : '')
+          }, React.createElement('div',{className:'text-sm font-medium'}, c))
+        )
+      ),
+      picked!==null && React.createElement('div',{className:'mt-2 p-3 rounded-xl ' + (correct ? 'bg-green-500/10' : 'bg-red-500/10')},
+        React.createElement('div',{className:'text-sm whitespace-pre-line'}, item.quiz.explain),
+        React.createElement('div',{className:'text-xs text-white/60 mt-1'}, correct ? 'תשובה נכונה 👌' : 'לא נורא, נסה שוב')
+      )
+    )
   );
 }
 
@@ -169,43 +168,40 @@ function App(){
   const onReset = ()=>{ setFeed([]); setDraft(null); };
 
   return (
-    <div>
-      <Header onImport={onImport} onExport={onExport} onReset={onReset}/>
-      <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={onFile}/>
-      <div className="py-6 px-4">
-        <div className="relative mx-auto max-w-[390px] h-[760px] rounded-[2.25rem] shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 overflow-hidden bg-gradient-to-b from-zinc-900 to-black">
-          <div className="absolute left-1/2 -translate-x-1/2 top-2 w-40 h-5 rounded-b-2xl bg-black/40"></div>
-          <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.06),transparent_60%)]"></div>
-          <div className="relative z-10 h-full flex flex-col">
-            {!draft && <Setup onCreate={onCreate}/>}
-            {draft && (
-              <div className="p-3 border-b border-white/10 bg-white/5">
-                <div className="text-sm font-semibold mb-2">טיוטה נוכחית</div>
-                <VideoCard item={draft}/>
-                <div className="mt-2 flex justify-end">
-                  <button onClick={()=>setDraft(null)} className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 mr-2">מחק טיוטה</button>
-                  <button onClick={addToFeed} className="px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30">הוסף לפיד</button>
-                </div>
-              </div>
-            )}
-            <div className="flex-1 overflow-y-auto">
-              {feed.length===0
-                ? <div className="p-6 text-center text-white/60">הפיד ריק. צור סרטון AI והוסף לפיד.</div>
-                : feed.map((it, idx)=>(
-                    <div key={it.id || idx} className="border-b border-white/10">
-                      <VideoCard item={it}/>
-                    </div>
-                  ))
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    React.createElement('div',null,
+      React.createElement(Header,{onImport,onExport,onReset}),
+      React.createElement('input',{ref:fileRef,type:'file',accept:'application/json',className:'hidden',onChange:onFile}),
+      React.createElement('div',{className:'py-6 px-4'},
+        React.createElement('div',{className:'relative mx-auto max-w-[390px] h-[760px] rounded-[2.25rem] shadow-[0_10px_30px_rgba(0,0,0,0.25)] border border-white/10 overflow-hidden bg-gradient-to-b from-zinc-900 to-black'},
+          React.createElement('div',{className:'absolute left-1/2 -translate-x-1/2 top-2 w-40 h-5 rounded-b-2xl bg-black/40'}),
+          React.createElement('div',{className:'absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,rgba(255,255,255,0.06),transparent_60%)]'}),
+          React.createElement('div',{className:'relative z-10 h-full flex flex-col'},
+            !draft && React.createElement(Setup,{ onCreate }),
+            draft && React.createElement('div',{className:'p-3 border-b border-white/10 bg-white/5'},
+              React.createElement('div',{className:'text-sm font-semibold mb-2'},'טיוטה נוכחית'),
+              React.createElement(VideoCard,{ item:draft }),
+              React.createElement('div',{className:'mt-2 flex justify-end'},
+                React.createElement('button',{onClick:()=>setDraft(null),className:'px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 mr-2'},'מחק טיוטה'),
+                React.createElement('button',{onClick:addToFeed,className:'px-3 py-2 rounded-lg bg-white/20 hover:bg-white/30'},'הוסף לפיד')
+              )
+            ),
+            React.createElement('div',{className:'flex-1 overflow-y-auto'},
+              feed.length===0
+              ? React.createElement('div',{className:'p-6 text-center text-white/60'},'הפיד ריק. צור סרטון AI והוסף לפיד.')
+              : feed.map((it, idx) =>
+                  React.createElement('div',{key:it.id || idx, className:'border-b border-white/10'},
+                    React.createElement(VideoCard,{ item:it })
+                  )
+                )
+            )
+          )
+        )
+      )
+    )
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
 </script>
 </body>
 </html>
