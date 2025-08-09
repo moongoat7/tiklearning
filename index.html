@@ -87,9 +87,12 @@ async function createAiItem(topic, level, duration) {
     body: JSON.stringify({ script: data.script })
   });
   const videoData = await videoResp.json();
-  if (!videoResp.ok) throw new Error(videoData.error || 'Video API failed');
+  if (!videoResp.ok || !videoData.videoUrl) {
+    console.error('Video API error:', videoData);
+    throw new Error(videoData.error || 'Video API failed or missing URL');
+  }
 
-  console.log('DID videoData:', videoData); // אמור להכיל { videoUrl: "..." }
+  console.log('DID videoData:', videoData);
 
   return {
     id: String(Date.now()),
@@ -97,10 +100,11 @@ async function createAiItem(topic, level, duration) {
     level,
     duration: `${parseInt(duration, 10) || duration} שניות`,
     script: data.script,
-    videoUrl: videoData.videoUrl,   // <<< שימי לב לכתיב הנכון
+    videoUrl: videoData.videoUrl,
     quiz: data.quiz
   };
 }
+
 
 
     // בונה אלמנט HTML להצגת הפריט בפיד
